@@ -1,163 +1,118 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Không gian yêu thương 💖</title>
+  <meta charset="UTF-8">
+  <title>Trang yêu thương 💖</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      font-family: 'Comic Sans MS', cursive;
       background-color: black;
+      font-family: 'Comic Sans MS', cursive;
     }
-
-    #particles-js, #three-container {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
-
     canvas {
       display: block;
+    }
+    .floating-text {
+      position: absolute;
+      color: #ff99cc;
+      font-size: 24px;
+      text-shadow: 0 0 10px #ff66cc;
+      animation: floatText 10s linear infinite;
+      white-space: nowrap;
+    }
+    .heart {
+      position: absolute;
+      font-size: 20px;
+      color: red;
+      animation: floatHeart 8s linear infinite;
+    }
+    @keyframes floatText {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-100vh) translateX(30vw); opacity: 0; }
+    }
+    @keyframes floatHeart {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-100vh) translateX(-20vw); opacity: 0; }
     }
   </style>
 </head>
 <body>
-
-  <div id="particles-js"></div>
   <div id="three-container"></div>
 
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/FontLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/geometries/TextGeometry.js"></script>
-
-  <!-- Stars background -->
   <script>
-    particlesJS('particles-js', {
-      particles: {
-        number: { value: 200, density: { enable: true, value_area: 1000 }},
-        color: { value: "#ffffff" },
-        shape: { type: "circle" },
-        opacity: { value: 0.7 },
-        size: { value: 1.5, random: true },
-        move: { enable: true, speed: 0.4, out_mode: "out" }
-      },
-      interactivity: {
-        events: {
-          onhover: { enable: true, mode: "repulse" },
-          onclick: { enable: true, mode: "push" }
-        },
-        modes: {
-          repulse: { distance: 100 },
-          push: { particles_nb: 4 }
-        }
-      },
-      retina_detect: true
-    });
-  </script>
-
-  <!-- 3D Text and Hearts -->
-  <script>
-    const container = document.getElementById('three-container');
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 70;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({alpha: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
-    container.appendChild(renderer.domElement);
-
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.1;
+    document.body.appendChild(renderer.domElement);
 
     const light = new THREE.PointLight(0xffffff, 1);
-    light.position.set(0, 50, 50);
+    light.position.set(0, 0, 50);
     scene.add(light);
-
-    const ambient = new THREE.AmbientLight(0xff66cc, 1);
-    scene.add(ambient);
 
     const loader = new THREE.FontLoader();
     loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-      const texts = [
-        "Anh yêu em nhiều lắm 💖",
-        "Cảm ơn vì em đã đến 💗",
-        "Anh sẽ luôn bên cạnh em 💞",
-        "Làm người yêu anh nhé ❤️",
-        "Nơi nào có em là nhà 💫"
-      ];
-
-      texts.forEach((msg, i) => {
-        const textGeo = new THREE.TextGeometry(msg, {
+      const messages = ["Anh yêu em nhiều lắm", "Cảm ơn vì em đã đến", "Anh sẽ luôn bên cạnh em", "Làm người yêu anh nhé 💖"];
+      messages.forEach((msg, i) => {
+        const geometry = new THREE.TextGeometry(msg, {
           font: font,
-          size: 3,
+          size: 2,
           height: 0.5,
           bevelEnabled: true,
-          bevelThickness: 0.1,
-          bevelSize: 0.05,
-          bevelSegments: 3
+          bevelThickness: 0.03,
+          bevelSize: 0.02,
+          bevelSegments: 5
         });
-
-        const textMat = new THREE.MeshPhongMaterial({ color: 0xff66cc });
-        const textMesh = new THREE.Mesh(textGeo, textMat);
-        textGeo.computeBoundingBox();
-        textGeo.center();
-
-        textMesh.position.set(
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100
-        );
-
-        scene.add(textMesh);
-      });
-
-      // Add floating hearts
-      for (let i = 0; i < 50; i++) {
-        const heartShape = new THREE.Shape();
-        const x = 0, y = 0;
-        heartShape.moveTo(x + 5, y + 5);
-        heartShape.bezierCurveTo(x + 5, y + 5, x + 4, y, x, y);
-        heartShape.bezierCurveTo(x - 6, y, x - 6, y + 7, x - 6, y + 7);
-        heartShape.bezierCurveTo(x - 6, y + 11, x - 3, y + 15.4, x + 5, y + 19);
-        heartShape.bezierCurveTo(x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7);
-        heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
-        heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
-
-        const geometry = new THREE.ShapeGeometry(heartShape);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff3366 });
+        const material = new THREE.MeshPhongMaterial({color: 0xff66cc});
         const mesh = new THREE.Mesh(geometry, material);
-
-        mesh.scale.set(0.2, 0.2, 0.2);
-        mesh.position.set(
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100
-        );
+        geometry.center();
+        mesh.position.z = -i * 10;
         scene.add(mesh);
-      }
-
-      animate();
+      });
     });
+
+    camera.position.z = 30;
 
     function animate() {
       requestAnimationFrame(animate);
-      controls.update();
+      scene.rotation.y += 0.001;
       renderer.render(scene, camera);
     }
+    animate();
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    function createFloatingText(content, x, delay = 0) {
+      const span = document.createElement('span');
+      span.className = 'floating-text';
+      span.innerText = content;
+      span.style.left = `${x}%`;
+      span.style.top = '100%';
+      span.style.animationDelay = `${delay}s`;
+      document.body.appendChild(span);
+    }
+
+    function createHeart(x, delay = 0) {
+      const span = document.createElement('span');
+      span.className = 'heart';
+      span.innerText = '❤️';
+      span.style.left = `${x}%`;
+      span.style.top = '100%';
+      span.style.animationDelay = `${delay}s`;
+      document.body.appendChild(span);
+    }
+
+    const messages = ["Anh yêu em", "Cảm ơn em", "Mãi bên nhau nhé", "Yêu em nhiều lắm", "Luôn bên em"];
+    for (let i = 0; i < 30; i++) {
+      const randomX = Math.random() * 90;
+      const delay = Math.random() * 10;
+      createFloatingText(messages[Math.floor(Math.random() * messages.length)], randomX, delay);
+      if (i % 2 === 0) createHeart(randomX + 5, delay);
+    }
   </script>
 </body>
 </html>
