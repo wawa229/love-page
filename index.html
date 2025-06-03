@@ -1,117 +1,53 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Trang yêu thương 💖</title>
+  <title>Trang web vô dụng nhất VN</title>
   <style>
     body {
-      margin: 0;
-      overflow: hidden;
-      background-color: black;
-      font-family: 'Comic Sans MS', cursive;
+      font-family: Comic Sans MS, cursive;
+      background-color: pink;
+      text-align: center;
+      padding-top: 100px;
     }
-    canvas {
-      display: block;
-    }
-    .floating-text {
-      position: absolute;
-      color: #ff99cc;
-      font-size: 24px;
-      text-shadow: 0 0 10px #ff66cc;
-      animation: floatText 10s linear infinite;
-      white-space: nowrap;
-    }
-    .heart {
-      position: absolute;
-      font-size: 20px;
+    h1 {
       color: red;
-      animation: floatHeart 8s linear infinite;
+      font-size: 3em;
+      animation: spin 2s infinite linear;
     }
-    @keyframes floatText {
-      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-      50% { opacity: 1; }
-      100% { transform: translateY(-100vh) translateX(30vw); opacity: 0; }
+    button {
+      padding: 20px;
+      font-size: 1.2em;
+      border: none;
+      background-color: yellow;
+      cursor: pointer;
     }
-    @keyframes floatHeart {
-      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-      50% { opacity: 1; }
-      100% { transform: translateY(-100vh) translateX(-20vw); opacity: 0; }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-  <div id="three-container"></div>
+  <h1>💥 Click để trở nên xàm xí 💥</h1>
+  <button onclick="beUseless()">Xàm thử coi</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/FontLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/geometries/TextGeometry.js"></script>
+  <p id="output" style="margin-top: 30px; font-size: 1.5em;"></p>
+
   <script>
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({alpha: true});
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    const phrases = [
+      "Bạn vừa lãng phí 0.01% cuộc đời!",
+      "Xàm quá trời luôn á!",
+      "Tui cũng không biết tui đang làm gì.",
+      "😵‍💫 Bấm thêm lần nữa cho vui!",
+      "Bạn thật tuyệt... trong việc xài thời gian vô ích!",
+      "Chúc mừng bạn, bạn vừa nhận được... không gì cả!"
+    ];
 
-    const light = new THREE.PointLight(0xffffff, 1);
-    light.position.set(0, 0, 50);
-    scene.add(light);
-
-    const loader = new THREE.FontLoader();
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-      const messages = ["Anh yêu em nhiều lắm", "Cảm ơn vì em đã đến", "Anh sẽ luôn bên cạnh em", "Làm người yêu anh nhé 💖"];
-      messages.forEach((msg, i) => {
-        const geometry = new THREE.TextGeometry(msg, {
-          font: font,
-          size: 2,
-          height: 0.5,
-          bevelEnabled: true,
-          bevelThickness: 0.03,
-          bevelSize: 0.02,
-          bevelSegments: 5
-        });
-        const material = new THREE.MeshPhongMaterial({color: 0xff66cc});
-        const mesh = new THREE.Mesh(geometry, material);
-        geometry.center();
-        mesh.position.z = -i * 10;
-        scene.add(mesh);
-      });
-    });
-
-    camera.position.z = 30;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      scene.rotation.y += 0.001;
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    function createFloatingText(content, x, delay = 0) {
-      const span = document.createElement('span');
-      span.className = 'floating-text';
-      span.innerText = content;
-      span.style.left = `${x}%`;
-      span.style.top = '100%';
-      span.style.animationDelay = `${delay}s`;
-      document.body.appendChild(span);
-    }
-
-    function createHeart(x, delay = 0) {
-      const span = document.createElement('span');
-      span.className = 'heart';
-      span.innerText = '❤️';
-      span.style.left = `${x}%`;
-      span.style.top = '100%';
-      span.style.animationDelay = `${delay}s`;
-      document.body.appendChild(span);
-    }
-
-    const messages = ["Anh yêu em", "Cảm ơn em", "Mãi bên nhau nhé", "Yêu em nhiều lắm", "Luôn bên em"];
-    for (let i = 0; i < 30; i++) {
-      const randomX = Math.random() * 90;
-      const delay = Math.random() * 10;
-      createFloatingText(messages[Math.floor(Math.random() * messages.length)], randomX, delay);
-      if (i % 2 === 0) createHeart(randomX + 5, delay);
+    function beUseless() {
+      const p = document.getElementById("output");
+      const msg = phrases[Math.floor(Math.random() * phrases.length)];
+      p.innerText = msg;
     }
   </script>
 </body>
