@@ -2,37 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Trang web vô dụng nhất VN</title>
+  <title>Trang web xàm xí cực đại VN</title>
   <style>
     body {
-      font-family: Comic Sans MS, cursive;
-      background-color: pink;
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(135deg, #ff69b4, #ffa07a, #ffff00);
       text-align: center;
-      padding-top: 100px;
+      padding-top: 80px;
+      animation: bgColor 10s infinite alternate;
     }
+
+    @keyframes bgColor {
+      0% { background-color: #ff69b4; }
+      25% { background-color: #ffa07a; }
+      50% { background-color: #ffff00; }
+      75% { background-color: #00ffff; }
+      100% { background-color: #ff69b4; }
+    }
+
     h1 {
-      color: red;
-      font-size: 3em;
-      animation: spin 2s infinite linear;
+      font-size: 3.5em;
+      color: #ff0000;
+      animation: spin 3s infinite linear;
+      text-shadow: 2px 2px 5px #fff;
     }
-    button {
-      padding: 20px;
-      font-size: 1.2em;
-      border: none;
-      background-color: yellow;
-      cursor: pointer;
+
+    h2 {
+      font-size: 2.5em;
+      color: #4b0082;
+      margin-bottom: 40px;
+      animation: pulse 2s infinite;
     }
+
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    button {
+      padding: 20px 40px;
+      font-size: 1.5em;
+      border: none;
+      background-color: #00ff00;
+      color: #000;
+      border-radius: 20px;
+      box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background-color: #adff2f;
+    }
+
+    #output {
+      margin-top: 40px;
+      font-size: 1.8em;
+      color: #0000cd;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <h1>💥 Click để trở nên xàm xí 💥</h1>
+  <h2>🌈 Bùi Tấn Inh đã tạo ra thứ này 🌈</h2>
   <button onclick="beUseless()">Xàm thử coi</button>
-
-  <p id="output" style="margin-top: 30px; font-size: 1.5em;"></p>
+  <p id="output"></p>
 
   <script>
     const phrases = [
@@ -41,7 +83,8 @@
       "Tui cũng không biết tui đang làm gì.",
       "😵‍💫 Bấm thêm lần nữa cho vui!",
       "Bạn thật tuyệt... trong việc xài thời gian vô ích!",
-      "Chúc mừng bạn, bạn vừa nhận được... không gì cả!"
+      "Chúc mừng bạn, bạn vừa nhận được... không gì cả!",
+      "Web này do Bùi Tấn Inh bảo trợ xàm xí!"
     ];
 
     function beUseless() {
