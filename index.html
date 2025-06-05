@@ -2,96 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Trang web xàm xí cực đại VN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bùi Tấn Inh - Fireworks!</title>
   <style>
     body {
-      font-family: 'Comic Sans MS', cursive;
-      background: linear-gradient(135deg, #ff69b4, #ffa07a, #ffff00);
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding-top: 80px;
-      animation: bgColor 10s infinite alternate;
-    }
-
-    @keyframes bgColor {
-      0% { background-color: #ff69b4; }
-      25% { background-color: #ffa07a; }
-      50% { background-color: #ffff00; }
-      75% { background-color: #00ffff; }
-      100% { background-color: #ff69b4; }
+      overflow: hidden;
     }
 
     h1 {
-      font-size: 3.5em;
-      color: #ff0000;
-      animation: spin 3s infinite linear;
-      text-shadow: 2px 2px 5px #fff;
+      margin-top: 40vh;
+      font-size: 4em;
+      z-index: 10;
+      position: relative;
     }
 
-    h2 {
-      font-size: 2.5em;
-      color: #4b0082;
-      margin-bottom: 40px;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-
-    button {
-      padding: 20px 40px;
-      font-size: 1.5em;
-      border: none;
-      background-color: #00ff00;
-      color: #000;
-      border-radius: 20px;
-      box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
-      cursor: pointer;
-      transition: transform 0.2s, background-color 0.3s;
-    }
-
-    button:hover {
-      transform: scale(1.1);
-      background-color: #adff2f;
-    }
-
-    #output {
-      margin-top: 40px;
-      font-size: 1.8em;
-      color: #0000cd;
-      font-weight: bold;
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <h1>💥 Click để trở nên xàm xí 💥</h1>
-  <h2>🌈 Bùi Tấn Inh đã tạo ra thứ này 🌈</h2>
-  <button onclick="beUseless()">Xàm thử coi</button>
-  <p id="output"></p>
+  <h1>Bùi Tấn Inh</h1>
+  <canvas id="fireworks"></canvas>
 
   <script>
-    const phrases = [
-      "Bạn vừa lãng phí 0.01% cuộc đời!",
-      "Xàm quá trời luôn á!",
-      "Tui cũng không biết tui đang làm gì.",
-      "😵‍💫 Bấm thêm lần nữa cho vui!",
-      "Bạn thật tuyệt... trong việc xài thời gian vô ích!",
-      "Chúc mừng bạn, bạn vừa nhận được... không gì cả!",
-      "Web này do Bùi Tấn Inh bảo trợ xàm xí!"
-    ];
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
 
-    function beUseless() {
-      const p = document.getElementById("output");
-      const msg = phrases[Math.floor(Math.random() * phrases.length)];
-      p.innerText = msg;
+    const particles = [];
+
+    function random(min, max) {
+      return Math.random() * (max - min) + min;
     }
+
+    function createFirework(x, y) {
+      const count = 100;
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: random(-5, 5),
+          vy: random(-5, 5),
+          alpha: 1,
+          radius: random(2, 4),
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`
+        });
+      }
+    }
+
+    function updateParticles() {
+      ctx.clearRect(0, 0, W, H);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.01;
+        p.vy += 0.05; // gravity
+
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function loop() {
+      updateParticles();
+      requestAnimationFrame(loop);
+    }
+
+    setInterval(() => {
+      const x = random(0, W);
+      const y = random(0, H / 2);
+      createFirework(x, y);
+    }, 600);
+
+    loop();
+
+    window.addEventListener('resize', () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+    });
   </script>
 </body>
 </html>
