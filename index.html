@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Particle Explosion Text</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Particle Text Effect</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -12,130 +14,101 @@
     }
     canvas {
       display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
     }
   </style>
 </head>
 <body>
-
-<canvas id="matrix"></canvas>
-
-<!-- MATRIX BACKGROUND -->
 <script>
-  const canvas = document.getElementById("matrix");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+let font;
+let particles = [];
+let texts = ["1", "Happy", "Birthday", "To You!"];
+let currentTextIndex = 0;
+let points = [];
+let nextPoints = [];
+let transitionFrame = 0;
+let holdFrame = 120; // Giữ chữ cũ trong 2 giây (60fps)
 
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const fontSize = 16;
-  const columns = Math.floor(canvas.width / fontSize);
-  const drops = Array(columns).fill(1);
+function preload() {
+  font = loadFont('https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf');
+}
 
-  function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  background(0);
+  frameRate(60);
+  textFont(font);
 
-    ctx.font = fontSize + "px monospace";
-    ctx.fillStyle = "#9cf";
+  updateText(texts[currentTextIndex]);
+}
 
-    for (let i = 0; i < drops.length; i++) {
-      const text = letters[Math.floor(Math.random() * letters.length)];
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+function updateText(txt) {
+  // Tạo điểm mới từ chữ
+  points = font.textToPoints(txt, width/2 - txt.length * 30, height/2 + 20, 192, {
+    sampleFactor: 0.2,
+    simplifyThreshold: 0
+  });
 
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      drops[i]++;
-    }
+  // Nếu số lượng hạt chưa đủ thì thêm
+  while (particles.length < points.length) {
+    particles.push(new Particle(width/2, height/2)); // Spawn từ giữa
   }
 
-  setInterval(drawMatrix, 33);
-</script>
+  // Nếu dư hạt thì bỏ
+  particles = particles.slice(0, points.length);
 
-<!-- PARTICLE TEXT -->
-<script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
-<script>
-  let font;
-  let particles = [];
-  let points = [];
-  let textIndex = 0;
-  const messages = ["3", "2", "1", "Happy Birthday", "27.06.2001", "TAN INH", "💖 Good things will come 💖"];
+  // Cập nhật mục tiêu cho mỗi hạt
+  for (let i = 0; i < points.length; i++) {
+    particles[i].setTarget(points[i].x, points[i].y);
+  }
+}
 
-  function preload() {
-    font = loadFont("https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf");
+function draw() {
+  background(0, 150); // trail mờ mờ đẹp
+
+  for (let p of particles) {
+    p.update();
+    p.show();
   }
 
-  function setup() {
-    createCanvas(window.innerWidth, window.innerHeight);
-    frameRate(60);
-    showText(messages[textIndex]);
-    setInterval(() => {
-      textIndex = (textIndex + 1) % messages.length;
-      collapseParticles(() => {
-        showText(messages[textIndex]);
-      });
-    }, 3000);
+  // Chuyển chữ sau một khoảng thời gian
+  transitionFrame++;
+  if (transitionFrame > holdFrame) {
+    currentTextIndex = (currentTextIndex + 1) % texts.length;
+    updateText(texts[currentTextIndex]);
+    transitionFrame = 0;
+  }
+}
+
+class Particle {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.target = createVector(x, y);
+    this.vel = p5.Vector.random2D().mult(random(1, 4));
+    this.acc = createVector();
+    this.r = 3;
+    this.color = color(random(150, 255), random(150, 255), 255);
   }
 
-  function showText(txt) {
-    let fontSize = txt.length < 5 ? 200 : 80;
-    points = font.textToPoints(txt, width/2 - (txt.length * fontSize * 0.25), height/2 + fontSize/4, fontSize, {
-      sampleFactor: 0.2
-    });
-
-    particles = []; // Clear particles
-    for (let pt of points) {
-      let p = new Particle(width/2, height/2); // start from center
-      p.setTarget(pt.x, pt.y);
-      particles.push(p);
-    }
+  setTarget(x, y) {
+    this.target = createVector(x, y);
   }
 
-  function collapseParticles(callback) {
-    for (let p of particles) {
-      p.setTarget(width/2, height/2);
-    }
-    setTimeout(callback, 1000); // 1s để co lại rồi chuyển chữ
+  update() {
+    let force = p5.Vector.sub(this.target, this.pos);
+    force.mult(0.06);
+    this.acc.add(force);
+    this.vel.add(this.acc);
+    this.vel.mult(0.9);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
   }
 
-  function draw() {
-    clear();
-    for (let p of particles) {
-      p.update();
-      p.show();
-    }
+  show() {
+    noStroke();
+    fill(this.color);
+    circle(this.pos.x, this.pos.y, this.r);
   }
-
-  class Particle {
-    constructor(x, y) {
-      this.pos = createVector(x, y);
-      this.target = createVector(x, y);
-      this.vel = p5.Vector.random2D().mult(random(3, 5));
-      this.acc = createVector();
-    }
-
-    setTarget(x, y) {
-      this.target = createVector(x, y);
-    }
-
-    update() {
-      let force = p5.Vector.sub(this.target, this.pos);
-      let dist = force.mag();
-      let speed = map(dist, 0, 100, 0, 10);
-      force.setMag(speed);
-      this.acc = force;
-      this.pos.add(this.acc);
-    }
-
-    show() {
-      stroke(0, 255, 255);
-      strokeWeight(2);
-      point(this.pos.x, this.pos.y);
-    }
-  }
+}
 </script>
 </body>
 </html>
