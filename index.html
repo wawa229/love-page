@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Particle Text with Matrix</title>
+  <title>Particle Explosion Text</title>
   <style>
     body {
       margin: 0;
@@ -26,8 +26,8 @@
 <script>
   const canvas = document.getElementById("matrix");
   const ctx = canvas.getContext("2d");
-  canvas.height = window.innerHeight;
   canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const fontSize = 16;
@@ -39,7 +39,7 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.font = fontSize + "px monospace";
-    ctx.fillStyle = "#9cf"; // tím nhạt
+    ctx.fillStyle = "#9cf";
 
     for (let i = 0; i < drops.length; i++) {
       const text = letters[Math.floor(Math.random() * letters.length)];
@@ -62,7 +62,7 @@
   let particles = [];
   let points = [];
   let textIndex = 0;
-  const messages = ["3", "2", "1", "Happy Birthday", "27.06.2001", "Tan Inh", "💖 Good things will come to you 💖"];
+  const messages = ["3", "2", "1", "Happy Birthday", "27.06.2001", "TAN INH", "💖 Good things will come 💖"];
 
   function preload() {
     font = loadFont("https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf");
@@ -71,34 +71,38 @@
   function setup() {
     createCanvas(window.innerWidth, window.innerHeight);
     frameRate(60);
-    // Khởi tạo tất cả particles từ tâm màn hình
-    for (let i = 0; i < 1000; i++) {
-      particles.push(new Particle(width/2, height/2));
-    }
-    updateText(messages[textIndex]);
+    showText(messages[textIndex]);
     setInterval(() => {
       textIndex = (textIndex + 1) % messages.length;
-      updateText(messages[textIndex]);
+      collapseParticles(() => {
+        showText(messages[textIndex]);
+      });
     }, 3000);
   }
 
-  function updateText(txt) {
-    let size = (txt.length < 5) ? 200 : 80;
-    points = font.textToPoints(txt, width/2 - (txt.length * size * 0.25), height/2 + size/4, size, {
+  function showText(txt) {
+    let fontSize = txt.length < 5 ? 200 : 80;
+    points = font.textToPoints(txt, width/2 - (txt.length * fontSize * 0.25), height/2 + fontSize/4, fontSize, {
       sampleFactor: 0.2
     });
 
-    for (let i = 0; i < particles.length; i++) {
-      if (i < points.length) {
-        particles[i].setTarget(points[i].x, points[i].y);
-      } else {
-        particles[i].setTarget(random(width), random(height));
-      }
+    particles = []; // Clear particles
+    for (let pt of points) {
+      let p = new Particle(width/2, height/2); // start from center
+      p.setTarget(pt.x, pt.y);
+      particles.push(p);
     }
   }
 
+  function collapseParticles(callback) {
+    for (let p of particles) {
+      p.setTarget(width/2, height/2);
+    }
+    setTimeout(callback, 1000); // 1s để co lại rồi chuyển chữ
+  }
+
   function draw() {
-    clear(); // canvas chính của p5 (trên nền matrix)
+    clear();
     for (let p of particles) {
       p.update();
       p.show();
@@ -107,12 +111,10 @@
 
   class Particle {
     constructor(x, y) {
-      this.pos = createVector(x, y); // bắt đầu từ giữa
+      this.pos = createVector(x, y);
       this.target = createVector(x, y);
-      this.vel = p5.Vector.random2D().mult(random(1, 5));
+      this.vel = p5.Vector.random2D().mult(random(3, 5));
       this.acc = createVector();
-      this.maxSpeed = 10;
-      this.maxForce = 1;
     }
 
     setTarget(x, y) {
@@ -121,16 +123,15 @@
 
     update() {
       let force = p5.Vector.sub(this.target, this.pos);
-      let d = force.mag();
-      let speed = this.maxSpeed;
-      if (d < 100) speed = map(d, 0, 100, 0, this.maxSpeed);
+      let dist = force.mag();
+      let speed = map(dist, 0, 100, 0, 10);
       force.setMag(speed);
       this.acc = force;
       this.pos.add(this.acc);
     }
 
     show() {
-      stroke(0, 255, 255); // màu sáng xanh
+      stroke(0, 255, 255);
       strokeWeight(2);
       point(this.pos.x, this.pos.y);
     }
