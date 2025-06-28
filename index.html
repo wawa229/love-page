@@ -105,31 +105,26 @@
         fontSize = 150;
       }
 
-      // Tạo canvas ảo để xác định vùng cần lấp đầy
-      let tempCanvas = createGraphics(width, height);
-      tempCanvas.background(0);
-      tempCanvas.fill(255);
-      tempCanvas.textFont(font);
-      tempCanvas.textSize(fontSize);
-      tempCanvas.textAlign(CENTER, CENTER);
-      tempCanvas.text(txt, width/2, height/2);
-      
-      tempCanvas.loadPixels();
+      // Căn giữa text
+      let bounds = font.textBounds(txt, 0, 0, fontSize);
+      let x = (width - bounds.w) / 2;
+      let y = (height + bounds.h) / 2;
+
+      // Tăng sampleFactor để có nhiều điểm hơn
+      points = font.textToPoints(txt, x, y, fontSize, {
+        sampleFactor: 0.25
+      });
+
       particles = [];
-      
-      // Quét toàn bộ khu vực chữ với bước nhảy 4px
-      let step = 4;
-      for (let y = 0; y < height; y += step) {
-        for (let x = 0; x < width; x += step) {
-          let index = (x + y * width) * 4;
-          if (tempCanvas.pixels[index] > 128) { // Nếu là pixel của chữ/số
-            particles.push(new Particle(
-              random(width),
-              random(height),
-              x,
-              y
-            ));
-          }
+      for (let pt of points) {
+        // Tạo 3 hạt cho mỗi điểm với độ lệch nhỏ
+        for (let i = 0; i < 3; i++) {
+          particles.push(new Particle(
+            random(width),
+            random(height),
+            pt.x + random(-2, 2),
+            pt.y + random(-2, 2)
+          ));
         }
       }
 
@@ -150,7 +145,7 @@
         this.acc = createVector();
         this.maxSpeed = 5;
         this.maxForce = 0.3;
-        this.size = 2.5; // Kích thước cố định để lấp đầy
+        this.size = 2.5;
       }
 
       update() {
