@@ -97,45 +97,40 @@
     }
 
     function showText(txt) {
-      let fontSize;
-      
-      if (["3", "2", "1"].includes(txt)) {
-        fontSize = 300;
-      } else {
-        fontSize = 150;
-      }
+  let fontSize = ["3", "2", "1"].includes(txt) ? 300 : 150;
 
-      // Căn giữa text
-      let bounds = font.textBounds(txt, 0, 0, fontSize);
-      let x = (width - bounds.w) / 2;
-      let y = (height + bounds.h) / 2;
+  // Tạo graphics phụ để vẽ chữ trắng trên nền đen
+  let pg = createGraphics(width, height);
+  pg.pixelDensity(1);
+  pg.background(0);
+  pg.fill(255);
+  pg.textFont(font);
+  pg.textSize(fontSize);
+  pg.textAlign(CENTER, CENTER);
+  pg.text(txt, width / 2, height / 2);
 
-      // Tăng sampleFactor để có nhiều điểm hơn
-      points = font.textToPoints(txt, x, y, fontSize, {
-        sampleFactor: 0.25
-      });
+  pg.loadPixels();
 
-      particles = [];
-      for (let pt of points) {
-        // Tạo 3 hạt cho mỗi điểm với độ lệch nhỏ
-        for (let i = 0; i < 3; i++) {
-          particles.push(new Particle(
-            random(width),
-            random(height),
-            pt.x + random(-2, 2),
-            pt.y + random(-2, 2)
-          ));
-        }
-      }
-
-      current++;
-      if (current < texts.length) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          showText(texts[current]);
-        }, 2500);
+  particles = [];
+  for (let x = 0; x < pg.width; x += 6) {
+    for (let y = 0; y < pg.height; y += 6) {
+      let index = (x + y * pg.width) * 4;
+      let brightness = pg.pixels[index]; // chỉ lấy kênh đỏ là đủ (ảnh trắng-đen)
+      if (brightness > 128) {
+        // Hạt bay từ ngoài vào
+        particles.push(new Particle(random(width), random(height), x, y));
       }
     }
+  }
+
+  current++;
+  if (current < texts.length) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      showText(texts[current]);
+    }, 2500);
+  }
+}
 
     class Particle {
       constructor(x, y, tx, ty) {
