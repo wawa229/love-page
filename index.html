@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Happy Birthday</title>
   <style>
     body {
       margin: 0;
       background: black;
       overflow: hidden;
+      color: #00ffcc;
       font-family: monospace;
+      text-align: center;
     }
 
     canvas {
@@ -18,13 +20,28 @@
       left: 0;
       z-index: -1;
     }
+
+    #message {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      font-size: 5vw;
+      color: #00ffe1;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
   <canvas id="matrix"></canvas>
+  <div id="message"></div>
 
-  <!-- Matrix Background Script -->
   <script>
+    // Matrix Effect
     const canvas = document.getElementById('matrix');
     const ctx = canvas.getContext('2d');
 
@@ -36,7 +53,7 @@
     const columns = canvas.width / fontSize;
     const drops = Array.from({ length: columns }).fill(1);
 
-    function drawMatrix() {
+    function draw() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -53,13 +70,10 @@
         drops[i]++;
       }
     }
-    setInterval(drawMatrix, 33);
-  </script>
+    setInterval(draw, 33);
 
-  <!-- p5.js Particles -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
-  <script>
-    const particleMessages = [
+    // Countdown + Message Display
+    const messages = [
       '3',
       '2',
       '1',
@@ -69,80 +83,22 @@
       '💖 Good things will come to you 💖'
     ];
 
-    let font;
-    let points = [];
-    let particles = [];
-    let currentMsgIndex = 0;
-    let nextMessageTimeout;
+    let index = 0;
+    const msgDiv = document.getElementById('message');
 
-    function preload() {
-      font = loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf');
-    }
-
-    function setup() {
-      let cnv = createCanvas(window.innerWidth, window.innerHeight);
-      cnv.position(0, 0);
-      cnv.style('z-index', '0'); // Đặt giữa matrix và giao diện
-      frameRate(60);
-      showMessage(particleMessages[currentMsgIndex]);
-    }
-
-    function draw() {
-      background(0, 0, 0, 25); // nền mờ để tạo trail cho hạt
-
-      for (let p of particles) {
-        p.update();
-        p.show();
-      }
-    }
-
-    function showMessage(text) {
-      points = font.textToPoints(text, 100, height / 2, 100, {
-        sampleFactor: 0.15
-      });
-
-      particles = [];
-      for (let pt of points) {
-        particles.push(new Particle(random(width), random(height), pt.x, pt.y));
-      }
-
-      currentMsgIndex++;
-      if (currentMsgIndex < particleMessages.length) {
-        clearTimeout(nextMessageTimeout);
-        nextMessageTimeout = setTimeout(() => {
-          showMessage(particleMessages[currentMsgIndex]);
-        }, 2500);
-      }
-    }
-
-    class Particle {
-      constructor(x, y, tx, ty) {
-        this.pos = createVector(x, y);
-        this.target = createVector(tx, ty);
-        this.vel = p5.Vector.random2D();
-        this.acc = createVector();
-        this.maxSpeed = 5;
-        this.maxForce = 0.3;
-      }
-
-      update() {
-        let force = p5.Vector.sub(this.target, this.pos);
-        let d = force.mag();
-        let speed = this.maxSpeed;
-        if (d < 100) {
-          speed = map(d, 0, 100, 0, this.maxSpeed);
+    function showNextMessage() {
+      msgDiv.style.opacity = 0;
+      setTimeout(() => {
+        msgDiv.innerText = messages[index];
+        msgDiv.style.opacity = 1;
+        index++;
+        if (index < messages.length) {
+          setTimeout(showNextMessage, 2000);
         }
-        force.setMag(speed);
-        this.acc = force;
-        this.pos.add(this.acc);
-      }
-
-      show() {
-        stroke(0, 255, 255);
-        strokeWeight(2);
-        point(this.pos.x, this.pos.y);
-      }
+      }, 500);
     }
+
+    showNextMessage();
   </script>
 </body>
 </html>
