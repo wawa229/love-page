@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Happy Birthday</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
     body {
       margin: 0;
       background: black;
       overflow: hidden;
-      font-family: 'Press Start 2P', monospace;
+      font-family: monospace;
     }
 
     canvas {
@@ -20,33 +18,15 @@
       left: 0;
       z-index: -1;
     }
-
-    #center-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: cyan;
-      font-size: 24px;
-      text-align: center;
-      text-shadow: 0 0 5px cyan, 0 0 10px cyan;
-      animation: flicker 1s infinite alternate;
-    }
-
-    @keyframes flicker {
-      from { opacity: 1; }
-      to { opacity: 0.7; }
-    }
   </style>
 </head>
 <body>
   <canvas id="matrix"></canvas>
-  <div id="center-text">Happy Birthday</div>
 
+  <!-- Matrix background -->
   <script>
     const canvas = document.getElementById('matrix');
     const ctx = canvas.getContext('2d');
-
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
 
@@ -73,6 +53,113 @@
       }
     }
     setInterval(drawMatrix, 33);
+  </script>
+
+  <!-- P5.js & particle text -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
+  <script>
+    const texts = [
+      '3',
+      '2',
+      '1',
+      'Happy Birthday',
+      '27.06.2001',
+      'Tan Inh',
+      '💖 Good things will come to you 💖'
+    ];
+
+    let font;
+    let particles = [];
+    let targetPoints = [];
+    let current = 0;
+    let timeout;
+
+    function preload() {
+      font = loadFont('https://raw.githubusercontent.com/google/fonts/main/ofl/vt323/VT323-Regular.ttf');
+    }
+
+    function setup() {
+      createCanvas(window.innerWidth, window.innerHeight);
+      frameRate(60);
+
+      // Tạo số lượng hạt vừa đủ
+      for (let i = 0; i < 1000; i++) {
+        particles.push(new Particle(random(width), random(height)));
+      }
+
+      setTextTargets(texts[current]);
+      showNextText();
+    }
+
+    function draw() {
+      clear();
+      for (let p of particles) {
+        p.update();
+        p.show();
+      }
+    }
+
+    function setTextTargets(txt) {
+      let fontSize = ["3", "2", "1"].includes(txt) ? 280 : 120;
+      let bounds = font.textBounds(txt, 0, 0, fontSize);
+      let x = (width - bounds.w) / 2;
+      let y = (height + bounds.h) / 2;
+
+      targetPoints = font.textToPoints(txt, x, y, fontSize, {
+        sampleFactor: 0.18,
+        simplifyThreshold: 0
+      });
+
+      for (let i = 0; i < particles.length; i++) {
+        if (i < targetPoints.length) {
+          particles[i].setTarget(targetPoints[i].x, targetPoints[i].y);
+        } else {
+          particles[i].setTarget(random(width / 2 - 50, width / 2 + 50), random(height / 2 - 50, height / 2 + 50));
+        }
+      }
+    }
+
+    function showNextText() {
+      setTextTargets(texts[current]);
+      current++;
+      if (current < texts.length) {
+        timeout = setTimeout(showNextText, 4000); // mỗi dòng hiển thị 4s
+      }
+    }
+
+    class Particle {
+      constructor(x, y) {
+        this.pos = createVector(x, y);
+        this.target = createVector(x, y);
+        this.vel = p5.Vector.random2D();
+        this.acc = createVector();
+        this.maxSpeed = 6;
+        this.maxForce = 0.2;
+        this.size = 2.5;
+      }
+
+      setTarget(x, y) {
+        this.target = createVector(x, y);
+      }
+
+      update() {
+        let force = p5.Vector.sub(this.target, this.pos);
+        let d = force.mag();
+        let speed = this.maxSpeed;
+        if (d < 100) {
+          speed = map(d, 0, 100, 0, this.maxSpeed);
+        }
+        force.setMag(speed);
+        this.acc.lerp(force, 0.2); // easing mượt
+        this.pos.add(this.acc);
+      }
+
+      show() {
+        stroke(0, 255, 255); // neon cyan
+        strokeWeight(this.size);
+        point(this.pos.x, this.pos.y);
+      }
+    }
   </script>
 </body>
 </html>
