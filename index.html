@@ -1,110 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bùi Tấn Inh - Fireworks!</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
       background: black;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
       overflow: hidden;
-    }
-
-    h1 {
-      margin-top: 40vh;
-      font-size: 4em;
-      z-index: 10;
-      position: relative;
+      color: #00ffcc;
+      font-family: monospace;
+      text-align: center;
     }
 
     canvas {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
-      pointer-events: none;
+      z-index: -1;
+    }
+
+    #message {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      font-size: 5vw;
+      color: #00ffe1;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <h1>Bùi Tấn Inh</h1>
-  <canvas id="fireworks"></canvas>
+  <canvas id="matrix"></canvas>
+  <div id="message"></div>
 
   <script>
-    const canvas = document.getElementById('fireworks');
+    // Matrix Effect
+    const canvas = document.getElementById('matrix');
     const ctx = canvas.getContext('2d');
-    let W = window.innerWidth;
-    let H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
 
-    const particles = [];
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
 
-    function random(min, max) {
-      return Math.random() * (max - min) + min;
-    }
+    const letters = '01ABCDEFGHIJKLMNOPQRSTUVXYZ';
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array.from({ length: columns }).fill(1);
 
-    function createFirework(x, y) {
-      const count = 100;
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x: x,
-          y: y,
-          vx: random(-5, 5),
-          vy: random(-5, 5),
-          alpha: 1,
-          radius: random(2, 4),
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`
-        });
-      }
-    }
+    function draw() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    function updateParticles() {
-      ctx.clearRect(0, 0, W, H);
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.01;
-        p.vy += 0.05; // gravity
+      ctx.fillStyle = '#B10DC9';
+      ctx.font = fontSize + 'px monospace';
 
-        if (p.alpha <= 0) {
-          particles.splice(i, 1);
-          continue;
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
         }
-
-        ctx.globalAlpha = p.alpha;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
+        drops[i]++;
       }
-      ctx.globalAlpha = 1;
+    }
+    setInterval(draw, 33);
+
+    // Countdown + Message Display
+    const messages = [
+      '3',
+      '2',
+      '1',
+      'Happy Birthday',
+      '27.06.2001',
+      'Linh Anh',
+      '💖 Good things will come to you 💖'
+    ];
+
+    let index = 0;
+    const msgDiv = document.getElementById('message');
+
+    function showNextMessage() {
+      msgDiv.style.opacity = 0;
+      setTimeout(() => {
+        msgDiv.innerText = messages[index];
+        msgDiv.style.opacity = 1;
+        index++;
+        if (index < messages.length) {
+          setTimeout(showNextMessage, 2000);
+        }
+      }, 500);
     }
 
-    function loop() {
-      updateParticles();
-      requestAnimationFrame(loop);
-    }
-
-    setInterval(() => {
-      const x = random(0, W);
-      const y = random(0, H / 2);
-      createFirework(x, y);
-    }, 600);
-
-    loop();
-
-    window.addEventListener('resize', () => {
-      W = window.innerWidth;
-      H = window.innerHeight;
-      canvas.width = W;
-      canvas.height = H;
-    });
+    showNextMessage();
   </script>
 </body>
 </html>
