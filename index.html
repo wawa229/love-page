@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Filled Particle Text</title>
+  <title>Particle Text Effect</title>
   <style>
     body {
       margin: 0;
@@ -17,7 +17,6 @@
       left: 0;
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -38,7 +37,6 @@
   function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.font = fontSize + "px monospace";
     ctx.fillStyle = "#9cf";
 
@@ -66,7 +64,7 @@
   const messages = ["3", "2", "1", "Happy Birthday", "27.06.2001", "TAN INH", "💖 Good things will come 💖"];
 
   function preload() {
-    font = loadFont("https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf");
+    font = loadFont("https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJfedw.woff"); // Poppins Regular
   }
 
   function setup() {
@@ -88,24 +86,12 @@
     let y = (height + bounds.h) / 2;
 
     points = font.textToPoints(txt, x, y, fontSize, {
-      sampleFactor: 0.1,  // tăng độ dày hạt
+      sampleFactor: 0.25,  // increase this if you want more dots
       simplifyThreshold: 0
     });
 
-    // Tạo các điểm lấp đầy vùng bounding box
-    let extraPoints = [];
-    for (let px = x; px < x + bounds.w; px += 8) {
-      for (let py = y - bounds.h; py < y; py += 8) {
-        if (font.textBounds(txt, x, y, fontSize).contains(px, py)) {
-          extraPoints.push({ x: px, y: py });
-        }
-      }
-    }
-
-    const allPoints = [...points, ...extraPoints];
-
     particles = [];
-    for (let pt of allPoints) {
+    for (let pt of points) {
       let p = new Particle(width / 2, height / 2);
       p.setTarget(pt.x, pt.y);
       particles.push(p);
@@ -116,7 +102,7 @@
     for (let p of particles) {
       p.setTarget(width / 2, height / 2);
     }
-    setTimeout(callback, 1000);
+    setTimeout(callback, 1000); // Wait before forming next text
   }
 
   function draw() {
@@ -131,7 +117,7 @@
     constructor(x, y) {
       this.pos = createVector(x, y);
       this.target = createVector(x, y);
-      this.vel = p5.Vector.random2D().mult(random(2, 5));
+      this.vel = p5.Vector.random2D().mult(random(3, 5));
       this.acc = createVector();
     }
 
@@ -150,10 +136,11 @@
 
     show() {
       stroke(0, 255, 255);
-      strokeWeight(2.2);
+      strokeWeight(2);
       point(this.pos.x, this.pos.y);
     }
   }
 </script>
+
 </body>
 </html>
