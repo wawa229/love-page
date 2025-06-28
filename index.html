@@ -97,15 +97,22 @@
     }
 
     function showText(txt) {
-  let fontSize = 100;
+  let fontSize;
 
-  // Tính toạ độ để chữ nằm giữa màn hình
+  // Các số to hơn hẳn
+  if (["3", "2", "1"].includes(txt)) {
+    fontSize = 300; // Rất to
+  } else {
+    fontSize = 150; // Cũng to hơn trước
+  }
+
+  // Căn giữa text
   let bounds = font.textBounds(txt, 0, 0, fontSize);
   let x = (width - bounds.w) / 2;
   let y = (height + bounds.h) / 2;
 
   points = font.textToPoints(txt, x, y, fontSize, {
-    sampleFactor: 0.15
+    sampleFactor: 0.12 // Giảm nhẹ sample để giảm lag nếu font to
   });
 
   particles = [];
@@ -121,6 +128,7 @@
     }, 2500);
   }
 }
+
 
 
     class Particle {
