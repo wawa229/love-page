@@ -85,15 +85,34 @@
 
   function showText(txt) {
     let fontSize = txt.length < 5 ? 200 : 80;
-    points = font.textToPoints(txt, width/2 - (txt.length * fontSize * 0.25), height/2 + fontSize/4, fontSize, {
-      sampleFactor: 0.2
-    });
-
+    
+    // Tạo canvas ảo để xác định vùng cần lấp đầy
+    let tempCanvas = createGraphics(width, height);
+    tempCanvas.background(0);
+    tempCanvas.fill(255);
+    tempCanvas.textFont(font);
+    tempCanvas.textSize(fontSize);
+    tempCanvas.textAlign(CENTER, CENTER);
+    tempCanvas.text(txt, width/2, height/2);
+    
+    tempCanvas.loadPixels();
     particles = [];
-    for (let pt of points) {
-      let p = new Particle(width/2, height/2); // Start from center
-      p.setTarget(pt.x, pt.y);
-      particles.push(p);
+    
+    // Quét toàn bộ khu vực chữ với bước nhảy 3px
+    let step = 3;
+    for (let y = 0; y < height; y += step) {
+      for (let x = 0; x < width; x += step) {
+        let index = (x + y * width) * 4;
+        if (tempCanvas.pixels[index] > 128) { // Nếu là pixel của chữ/số
+          // Tạo hạt với vị trí ngẫu nhiên ban đầu
+          let p = new Particle(
+            random(width), 
+            random(height)
+          );
+          p.setTarget(x, y);
+          particles.push(p);
+        }
+      }
     }
   }
 
@@ -118,6 +137,7 @@
       this.target = createVector(x, y);
       this.vel = p5.Vector.random2D().mult(random(3, 5));
       this.acc = createVector();
+      this.size = 3; // Tăng kích thước hạt
     }
 
     setTarget(x, y) {
@@ -135,7 +155,7 @@
 
     show() {
       stroke(0, 255, 255);
-      strokeWeight(2);
+      strokeWeight(this.size);
       point(this.pos.x, this.pos.y);
     }
   }
