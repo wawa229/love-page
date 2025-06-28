@@ -98,15 +98,15 @@
 
     function showText(txt) {
       let fontSize;
-      let density;
+      let sampleFactor;
       
       // Điều chỉnh kích thước và mật độ hạt
       if (["3", "2", "1"].includes(txt)) {
         fontSize = 300;
-        density = 0.5; // Rất dày đặc cho số
+        sampleFactor = 0.3; // Rất dày đặc
       } else {
         fontSize = 150;
-        density = 0.3; // Dày đặc cho chữ
+        sampleFactor = 0.25; // Dày đặc
       }
 
       // Căn giữa text
@@ -114,37 +114,21 @@
       let x = (width - bounds.w) / 2;
       let y = (height + bounds.h) / 2;
 
-      // Tạo canvas ảo để lấy dữ liệu pixel
-      let tempCanvas = createGraphics(width, height);
-      tempCanvas.background(0);
-      tempCanvas.fill(255);
-      tempCanvas.textFont(font);
-      tempCanvas.textSize(fontSize);
-      tempCanvas.textAlign(CENTER, CENTER);
-      tempCanvas.text(txt, width/2, height/2);
-      
-      // Lấy dữ liệu pixel
-      tempCanvas.loadPixels();
+      points = font.textToPoints(txt, x, y, fontSize, {
+        sampleFactor: sampleFactor
+      });
+
       particles = [];
-      
-      // Quét toàn bộ khu vực chữ để tạo hạt
-      let step = 3; // Khoảng cách giữa các hạt
-      for (let px = x; px < x + bounds.w; px += step) {
-        for (let py = y - bounds.h; py < y; py += step) {
-          let index = (px + py * width) * 4;
-          if (tempCanvas.pixels[index] > 128) { // Nếu là pixel của chữ
-            // Tạo nhiều hạt hơn ở vị trí này tùy theo density
-            if (random() < density) {
-              for (let i = 0; i < 2; i++) {
-                particles.push(new Particle(
-                  random(width),
-                  random(height),
-                  px + random(-2, 2),
-                  py + random(-2, 2)
-                ));
-              }
-            }
-          }
+      for (let pt of points) {
+        // Tạo 5 hạt cho mỗi điểm để lấp đầy hoàn toàn
+        for (let i = 0; i < 5; i++) {
+          particles.push(new Particle(
+            random(width),
+            random(height),
+            pt.x + random(-3, 3), // Thêm độ lệch nhỏ
+            pt.y + random(-3, 3),
+            ["3", "2", "1"].includes(txt) // Có phải là số không
+          ));
         }
       }
 
@@ -158,14 +142,14 @@
     }
 
     class Particle {
-      constructor(x, y, tx, ty) {
+      constructor(x, y, tx, ty, isNumber) {
         this.pos = createVector(x, y);
         this.target = createVector(tx, ty);
         this.vel = p5.Vector.random2D();
         this.acc = createVector();
         this.maxSpeed = 5;
         this.maxForce = 0.3;
-        this.size = random(1.5, 2.5);
+        this.size = isNumber ? random(2, 3) : random(1.5, 2.5);
       }
 
       update() {
