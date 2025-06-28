@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Particle Text</title>
+  <title>Particle Explosion Text</title>
   <style>
     body {
       margin: 0;
@@ -12,13 +12,19 @@
     }
     canvas {
       display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
   </style>
+  <!-- Link Google Fonts: Poppins Bold -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- Matrix background -->
 <canvas id="matrix"></canvas>
+
+<!-- MATRIX BACKGROUND -->
 <script>
   const canvas = document.getElementById("matrix");
   const ctx = canvas.getContext("2d");
@@ -33,8 +39,9 @@
   function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     ctx.font = fontSize + "px monospace";
-    ctx.fillStyle = "#0ff";
+    ctx.fillStyle = "#9cf";
 
     for (let i = 0; i < drops.length; i++) {
       const text = letters[Math.floor(Math.random() * letters.length)];
@@ -46,38 +53,31 @@
       drops[i]++;
     }
   }
+
   setInterval(drawMatrix, 33);
 </script>
 
-<!-- Particle text effect -->
+<!-- PARTICLE TEXT -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
 <script>
   let font;
   let particles = [];
   let points = [];
   let textIndex = 0;
-  const messages = [
-    "3", "2", "1",
-    "Happy Birthday",
-    "27.06.2001",
-    "TAN INH",
-    "💖 Good things will come 💖"
-  ];
+  const messages = ["3", "2", "1", "Happy Birthday", "27.06.2001", "TAN INH", "💖 Good things will come 💖"];
 
   function preload() {
-    font = loadFont("https://github.com/google/fonts/raw/main/ofl/poppins/Poppins-Regular.ttf");
+    // Load Poppins Bold font
+    font = loadFont("https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf");
   }
 
   function setup() {
     createCanvas(window.innerWidth, window.innerHeight);
     frameRate(60);
-    textFont(font);
-    textAlign(CENTER, CENTER);
     showText(messages[textIndex]);
-
     setInterval(() => {
+      textIndex = (textIndex + 1) % messages.length;
       collapseParticles(() => {
-        textIndex = (textIndex + 1) % messages.length;
         showText(messages[textIndex]);
       });
     }, 3000);
@@ -85,17 +85,13 @@
 
   function showText(txt) {
     let fontSize = txt.length < 5 ? 200 : 80;
-    let bounds = font.textBounds(txt, 0, 0, fontSize);
-    let x = (width - bounds.w) / 2;
-    let y = (height + bounds.h) / 2;
-
-    points = font.textToPoints(txt, x, y, fontSize, {
+    points = font.textToPoints(txt, width/2 - (txt.length * fontSize * 0.25), height/2 + fontSize/4, fontSize, {
       sampleFactor: 0.2
     });
 
     particles = [];
     for (let pt of points) {
-      let p = new Particle(width / 2, height / 2); // start at center
+      let p = new Particle(width/2, height/2); // Start from center
       p.setTarget(pt.x, pt.y);
       particles.push(p);
     }
@@ -103,7 +99,7 @@
 
   function collapseParticles(callback) {
     for (let p of particles) {
-      p.setTarget(width / 2, height / 2);
+      p.setTarget(width/2, height/2);
     }
     setTimeout(callback, 1000);
   }
@@ -120,7 +116,7 @@
     constructor(x, y) {
       this.pos = createVector(x, y);
       this.target = createVector(x, y);
-      this.vel = p5.Vector.random2D().mult(random(2, 4));
+      this.vel = p5.Vector.random2D().mult(random(3, 5));
       this.acc = createVector();
     }
 
@@ -144,6 +140,5 @@
     }
   }
 </script>
-
 </body>
 </html>
