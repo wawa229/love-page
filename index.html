@@ -82,7 +82,7 @@
     function setup() {
       let cnv = createCanvas(window.innerWidth, window.innerHeight);
       cnv.position(0, 0);
-      cnv.style('z-index', '0'); // Đặt dưới div khác, trên matrix
+      cnv.style('z-index', '-2'); // đẩy xuống dưới canvas chữ
       frameRate(60);
       showText(texts[current]);
     }
