@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Particle Explosion Text</title>
+  <title>Particle Text Effect</title>
   <style>
     body {
       margin: 0;
@@ -17,143 +17,149 @@
       left: 0;
     }
   </style>
-  <!-- Link Google Fonts: Poppins Bold -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <canvas id="matrix"></canvas>
 
-<!-- MATRIX BACKGROUND -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
 <script>
-  const canvas = document.getElementById("matrix");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  // Matrix background
+  const matrixCanvas = document.getElementById("matrix");
+  const matrixCtx = matrixCanvas.getContext("2d");
+  matrixCanvas.width = window.innerWidth;
+  matrixCanvas.height = window.innerHeight;
 
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const fontSize = 16;
-  const columns = Math.floor(canvas.width / fontSize);
+  const matrixFontSize = 16;
+  const columns = Math.floor(matrixCanvas.width / matrixFontSize);
   const drops = Array(columns).fill(1);
 
   function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
-    ctx.font = fontSize + "px monospace";
-    ctx.fillStyle = "#9cf";
+    matrixCtx.font = matrixFontSize + "px monospace";
+    matrixCtx.fillStyle = "#9cf";
 
     for (let i = 0; i < drops.length; i++) {
       const text = letters[Math.floor(Math.random() * letters.length)];
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      matrixCtx.fillText(text, i * matrixFontSize, drops[i] * matrixFontSize);
 
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      if (drops[i] * matrixFontSize > matrixCanvas.height && Math.random() > 0.975) {
         drops[i] = 0;
       }
       drops[i]++;
     }
   }
-
   setInterval(drawMatrix, 33);
-</script>
 
-<!-- PARTICLE TEXT -->
-<script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
-<script>
+  // Particle text
   let font;
   let particles = [];
-  let points = [];
-  let textIndex = 0;
-  const messages = ["3", "2", "1", "Happy Birthday", "27.06.2001", "TAN INH", "💖 Good things will come 💖"];
+  let currentText = 0;
+  const texts = ["3", "2", "1", "Happy Birthday", "27.06.2001", "TAN INH", "💖 Good things will come 💖"];
+  let pg; // Graphics buffer for text rendering
 
   function preload() {
-    // Load Poppins Bold font
-    font = loadFont("https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf");
+    font = loadFont("https://fonts.gstatic.com/s/poppins/v15/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2");
   }
 
   function setup() {
     createCanvas(window.innerWidth, window.innerHeight);
     frameRate(60);
-    showText(messages[textIndex]);
+    
+    // Create graphics buffer
+    pg = createGraphics(width, height);
+    pg.textFont(font);
+    pg.textAlign(CENTER, CENTER);
+    
+    showText(texts[currentText]);
+    
+    // Change text every 3 seconds
     setInterval(() => {
-      textIndex = (textIndex + 1) % messages.length;
-      collapseParticles(() => {
-        showText(messages[textIndex]);
-      });
+      currentText = (currentText + 1) % texts.length;
+      showText(texts[currentText]);
     }, 3000);
   }
 
   function showText(txt) {
-    let fontSize = txt.length < 5 ? 200 : 80;
-    
-    // Tạo canvas ảo để xác định vùng cần lấp đầy
-    let tempCanvas = createGraphics(width, height);
-    tempCanvas.background(0);
-    tempCanvas.fill(255);
-    tempCanvas.textFont(font);
-    tempCanvas.textSize(fontSize);
-    tempCanvas.textAlign(CENTER, CENTER);
-    tempCanvas.text(txt, width/2, height/2);
-    
-    tempCanvas.loadPixels();
+    // Clear particles
     particles = [];
     
-    // Quét toàn bộ khu vực chữ với bước nhảy 3px
-    let step = 3;
+    // Determine font size based on text length
+    const fontSize = txt.length <= 3 ? 200 : 80;
+    
+    // Render text to graphics buffer
+    pg.clear();
+    pg.background(0, 0);
+    pg.fill(255);
+    pg.textSize(fontSize);
+    pg.text(txt, width/2, height/2);
+    
+    // Get pixel data
+    pg.loadPixels();
+    
+    // Create particles for each pixel in the text
+    const step = 3; // Pixel sampling step
     for (let y = 0; y < height; y += step) {
       for (let x = 0; x < width; x += step) {
-        let index = (x + y * width) * 4;
-        if (tempCanvas.pixels[index] > 128) { // Nếu là pixel của chữ/số
-          // Tạo hạt với vị trí ngẫu nhiên ban đầu
-          let p = new Particle(
-            random(width), 
-            random(height)
-          );
-          p.setTarget(x, y);
-          particles.push(p);
+        const index = (x + y * width) * 4;
+        if (pg.pixels[index] > 128) { // If pixel is part of text
+          // Create particle with random starting position
+          particles.push(new Particle(
+            random(width),
+            random(height),
+            x,
+            y
+          ));
         }
       }
     }
   }
 
-  function collapseParticles(callback) {
-    for (let p of particles) {
-      p.setTarget(width/2, height/2);
-    }
-    setTimeout(callback, 1000);
-  }
-
   function draw() {
     clear();
+    
+    // Update and display particles
     for (let p of particles) {
       p.update();
-      p.show();
+      p.display();
     }
   }
 
   class Particle {
-    constructor(x, y) {
+    constructor(x, y, tx, ty) {
       this.pos = createVector(x, y);
-      this.target = createVector(x, y);
-      this.vel = p5.Vector.random2D().mult(random(3, 5));
+      this.target = createVector(tx, ty);
+      this.vel = createVector();
       this.acc = createVector();
-      this.size = 3; // Tăng kích thước hạt
+      this.maxSpeed = 5;
+      this.maxForce = 0.2;
+      this.size = 3;
     }
-
-    setTarget(x, y) {
-      this.target = createVector(x, y);
-    }
-
+    
     update() {
-      let force = p5.Vector.sub(this.target, this.pos);
-      let dist = force.mag();
-      let speed = map(dist, 0, 100, 0, 10);
-      force.setMag(speed);
-      this.acc = force;
-      this.pos.add(this.acc);
+      // Move toward target
+      const desired = p5.Vector.sub(this.target, this.pos);
+      const d = desired.mag();
+      let speed = this.maxSpeed;
+      if (d < 100) {
+        speed = map(d, 0, 100, 0, this.maxSpeed);
+      }
+      desired.setMag(speed);
+      
+      const steer = p5.Vector.sub(desired, this.vel);
+      steer.limit(this.maxForce);
+      this.acc.add(steer);
+      
+      this.vel.add(this.acc);
+      this.pos.add(this.vel);
+      this.acc.mult(0);
     }
-
-    show() {
+    
+    display() {
       stroke(0, 255, 255);
       strokeWeight(this.size);
       point(this.pos.x, this.pos.y);
