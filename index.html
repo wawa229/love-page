@@ -97,23 +97,31 @@
     }
 
     function showText(txt) {
-      points = font.textToPoints(txt, 100, height / 2, 100, {
-        sampleFactor: 0.15
-      });
+  let fontSize = 100;
 
-      particles = [];
-      for (let pt of points) {
-        particles.push(new Particle(random(width), random(height), pt.x, pt.y));
-      }
+  // Tính toạ độ để chữ nằm giữa màn hình
+  let bounds = font.textBounds(txt, 0, 0, fontSize);
+  let x = (width - bounds.w) / 2;
+  let y = (height + bounds.h) / 2;
 
-      current++;
-      if (current < texts.length) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          showText(texts[current]);
-        }, 2500);
-      }
-    }
+  points = font.textToPoints(txt, x, y, fontSize, {
+    sampleFactor: 0.15
+  });
+
+  particles = [];
+  for (let pt of points) {
+    particles.push(new Particle(random(width), random(height), pt.x, pt.y));
+  }
+
+  current++;
+  if (current < texts.length) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      showText(texts[current]);
+    }, 2500);
+  }
+}
+
 
     class Particle {
       constructor(x, y, tx, ty) {
