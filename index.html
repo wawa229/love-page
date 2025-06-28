@@ -82,13 +82,13 @@
     function setup() {
       let cnv = createCanvas(window.innerWidth, window.innerHeight);
       cnv.position(0, 0);
-      cnv.style('z-index', '-2'); // đẩy xuống dưới canvas chữ
+      cnv.style('z-index', '0'); // đẩy xuống dưới canvas chữ
       frameRate(60);
       showText(texts[current]);
     }
 
     function draw() {
-      background(0, 0, 0, 25); // hiệu ứng mờ
+      clear();
 
       for (let p of particles) {
         p.update();
