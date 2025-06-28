@@ -23,7 +23,7 @@
 <body>
   <canvas id="matrix"></canvas>
 
-  <!-- Hiệu ứng matrix nền -->
+  <!-- Matrix background effect -->
   <script>
     const canvas = document.getElementById('matrix');
     const ctx = canvas.getContext('2d');
@@ -40,7 +40,7 @@
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#B10DC9';
+      ctx.fillStyle = '#00FFFF'; // neon cyan
       ctx.font = fontSize + 'px monospace';
 
       for (let i = 0; i < drops.length; i++) {
@@ -56,7 +56,7 @@
     setInterval(drawMatrix, 33);
   </script>
 
-  <!-- Thư viện hiệu ứng chữ particles -->
+  <!-- P5.js & particle text -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.min.js"></script>
   <script>
     const texts = [
@@ -71,76 +71,74 @@
 
     let font;
     let particles = [];
-    let points = [];
+    let targetPoints = [];
     let current = 0;
     let timeout;
 
     function preload() {
-font = loadFont('https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf');
+      font = loadFont('https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf');
     }
 
     function setup() {
-      let cnv = createCanvas(window.innerWidth, window.innerHeight);
-      cnv.position(0, 0);
-      cnv.style('z-index', '0');
+      createCanvas(window.innerWidth, window.innerHeight);
       frameRate(60);
-      showText(texts[current]);
+
+      for (let i = 0; i < 1500; i++) {
+        particles.push(new Particle(random(width), random(height)));
+      }
+
+      setTextTargets(texts[current]);
+      showNextText();
     }
 
     function draw() {
       clear();
-
       for (let p of particles) {
         p.update();
         p.show();
       }
     }
 
-    function showText(txt) {
-  let fontSize = ["3", "2", "1"].includes(txt) ? 300 : 150;
+    function setTextTargets(txt) {
+      let fontSize = ["3", "2", "1"].includes(txt) ? 300 : 150;
+      let bounds = font.textBounds(txt, 0, 0, fontSize);
+      let x = (width - bounds.w) / 2;
+      let y = (height + bounds.h) / 2;
 
-  // Tạo graphics phụ để vẽ chữ trắng trên nền đen
-  let pg = createGraphics(width, height);
-  pg.pixelDensity(1);
-  pg.background(0);
-  pg.fill(255);
-  pg.textFont(font);
-  pg.textSize(fontSize);
-  pg.textAlign(CENTER, CENTER);
-  pg.text(txt, width / 2, height / 2);
+      targetPoints = font.textToPoints(txt, x, y, fontSize, {
+        sampleFactor: 0.2
+      });
 
-  pg.loadPixels();
-
-  particles = [];
-  for (let x = 0; x < pg.width; x += 6) {
-    for (let y = 0; y < pg.height; y += 6) {
-      let index = (x + y * pg.width) * 4;
-      let brightness = pg.pixels[index]; // chỉ lấy kênh đỏ là đủ (ảnh trắng-đen)
-      if (brightness > 128) {
-        // Hạt bay từ ngoài vào
-        particles.push(new Particle(random(width), random(height), x, y));
+      for (let i = 0; i < particles.length; i++) {
+        if (i < targetPoints.length) {
+          particles[i].setTarget(targetPoints[i].x, targetPoints[i].y);
+        } else {
+          particles[i].setTarget(random(width / 2 - 50, width / 2 + 50), random(height / 2 - 50, height / 2 + 50));
+        }
       }
     }
-  }
 
-  current++;
-  if (current < texts.length) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      showText(texts[current]);
-    }, 2500);
-  }
-}
+    function showNextText() {
+      setTextTargets(texts[current]);
+      current++;
+      if (current < texts.length) {
+        timeout = setTimeout(showNextText, 3000);
+      }
+    }
 
     class Particle {
-      constructor(x, y, tx, ty) {
+      constructor(x, y) {
         this.pos = createVector(x, y);
-        this.target = createVector(tx, ty);
+        this.target = createVector(x, y);
         this.vel = p5.Vector.random2D();
         this.acc = createVector();
         this.maxSpeed = 5;
         this.maxForce = 0.3;
         this.size = 2.5;
+      }
+
+      setTarget(x, y) {
+        this.target = createVector(x, y);
       }
 
       update() {
